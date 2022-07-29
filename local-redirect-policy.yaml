@@ -1,0 +1,21 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumLocalRedirectPolicy
+metadata:
+  name: demo
+  namespace: cilium-demo
+spec:
+  redirectFrontend:
+    serviceMatcher:
+      serviceName: demo
+      namespace: cilium-demo
+  redirectBackend:
+    localEndpointSelector:
+      matchLabels:
+        app: demo
+    toPorts:
+      - port: "8080"
+        name: http
+        protocol: TCP
+      - port: "8443"
+        name: https
+        protocol: TCP

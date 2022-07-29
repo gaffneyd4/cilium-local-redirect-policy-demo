@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: demo
+  namespace: cilium-demo
+spec:
+  selector:
+    matchLabels:
+      app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+      name: demo
+    spec:
+      containers:
+      - command:
+        - python
+        args:
+        - -m
+        - http.server 
+        - "8080"
+        image: docker.io/library/python:3-buster
+        imagePullPolicy: IfNotPresent
+        name: http
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/http
+        volumeMounts:
+        - mountPath: /tmp/
+          name: volume
+      - command:
+        - python
+        args:
+        - -m
+        - http.server 
+        - "8443"
+        image: docker.io/library/python:3-buster
+        imagePullPolicy: IfNotPresent
+        name: https
+        ports:
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/https
+        volumeMounts:
+        - mountPath: /tmp/
+          name: volume
+      initContainers:
+      - command:
+        - sh
+        args:
+        - -c
+        - "touch /tmp/http /tmp/https"
+        image: docker.io/library/python:3-buster
+        imagePullPolicy: IfNotPresent
+        name: init
+        volumeMounts:
+        - mountPath: /tmp/
+          name: volume
+      volumes:
+      - name: volume
+        emptyDir: {}
